@@ -1,8 +1,39 @@
+
+/*
+const fs = require('fs');
+const path = require('path');
+const fetch = require('node-fetch');
+*/
+
+window.onload=function(){
 var button = document.getElementById("cat-button");
 button.addEventListener("click", addCat);
+}
+
+let ts = Date.now();
+var imagename = "image" + ts + ".png";
 
 
+async function downloadImage(
+  imageSrc,
+  nameOfDownload = imagename,
+) {
+  const response = await fetch(imageSrc);
 
+  const blobImage = await response.blob();
+
+  const href = URL.createObjectURL(blobImage);
+
+  const anchorElement = document.createElement('a');
+  anchorElement.href = href;
+  anchorElement.download = nameOfDownload;
+
+  document.body.appendChild(anchorElement);
+  anchorElement.click();
+
+  document.body.removeChild(anchorElement);
+  window.URL.revokeObjectURL(href);
+}
 
 function addCat() {
 
@@ -23,8 +54,29 @@ fetch(url,{headers: {
 
 data.map(function(imageData) {
     let imagefile = `${imageData.url}`;
+    console.log(imagefile);
+    //let ts = Date.now();
+    //let filename = "image" + ts +".jpg";
+    
+    /*fs.writeFile(filename, imageData, 'binary', (err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.log('Image saved successfully!');
+    });
+    */
 
-    saveImage(imageLink);
+    downloadImage(
+      imagefile,
+      imagename,
+    )
+      .then(() => {
+        console.log('The image has been downloaded');
+      })
+      .catch(err => {
+        console.log('Error downloading image: ', err);
+      });
 
 });
 })
@@ -34,24 +86,3 @@ data.map(function(imageData) {
 
 }
 
-const fs = require('fs');
-const path = require('path');
-const fetch = require('node-fetch');
-
-function saveImage(imageLink) {
-  fetch(imageLink)
-    .then(response => response.buffer())
-    .then(buffer => {
-      const filename = path.basename('C:\Users\theul\Node\cat' + imageLink); // Extract the filename from the image link
-      fs.writeFile(filename, buffer, (error) => {
-        if (error) {
-          console.error('Error:', error);
-        } else {
-          console.log(`Image saved as ${filename}`);
-        }
-      });
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-}
